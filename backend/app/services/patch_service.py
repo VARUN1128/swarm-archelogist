@@ -1,12 +1,12 @@
 import re
 from pathlib import Path
 
+from app.core.exceptions import ApplicationError
 from app.schemas.analysis import StaffEngineerReview
-from app.schemas.common import RepositoryContext
+from app.schemas.common import RepositoryContext, StrictBaseModel
 from app.schemas.patching import PatchDraft, PatchProposal, PatchValidationIssue, PatchValidationReport
 from app.services.github_service import GitHubService
 from app.services.openai_service import OpenAIService
-from app.core.exceptions import ApplicationError
 
 
 class PatchBatchResponse(PatchValidationReport):
@@ -38,15 +38,14 @@ class PatchService:
             response_model=PatchListResponse,
         )
         enriched_patches: list[PatchProposal] = []
-        owner = repository_context.metadata.owner
-        repo = repository_context.metadata.name
+        structure_paths = {entry.path for entry in repository_context.structure}
         for patch in response.patches:
-            original_content = await self._get_original_content(owner, repo, patch.file)
+            original_content = await self._get_original_content(repository_context, patch.file)
             proposed_content = self._apply_unified_diff(original_content, patch.patch_diff)
             enriched_patches.append(
                 PatchProposal(
                     **patch.model_dump(),
-                    change_type="create" if patch.file not in {entry.path for entry in repository_context.structure} else "modify",
+                    change_type="create" if patch.file not in structure_paths else "modify",
                     original_content=original_content,
                     proposed_content=proposed_content,
                 )
@@ -73,9 +72,14 @@ class PatchService:
                 issues.append(PatchValidationIssue(patch_file=patch.file, message="Patch could not be expanded into proposed file content."))
         return PatchValidationReport(valid=not issues, issues=issues)
 
-    async def _get_original_content(self, owner: str, repo: str, path: str) -> str:
+    async def _get_original_content(self, repository_context: RepositoryContext, path: str) -> str:
+        if repository_context.source_type == "local" and repository_context.local_root_path:
+            local_path = Path(repository_context.local_root_path) / path
+            if not local_path.exists() or not local_path.is_file():
+                return ""
+            return local_path.read_text(encoding="utf-8", errors="ignore")
         try:
-            return await self.github_service.get_file_content(owner, repo, path)
+            return await self.github_service.get_file_content(repository_context.metadata.owner, repository_context.metadata.name, path)
         except ApplicationError as exc:
             if exc.code == "github_not_found":
                 return ""
@@ -128,9 +132,6 @@ class PatchService:
             source_index += 1
 
         return "\n".join(output).strip("\n")
-
-
-from app.schemas.common import StrictBaseModel
 
 
 class PatchListResponse(StrictBaseModel):

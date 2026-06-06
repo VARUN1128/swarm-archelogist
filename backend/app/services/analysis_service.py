@@ -42,7 +42,8 @@ class AnalysisService:
         progress_callback: ProgressCallback | None = None,
     ) -> AnalyzeRepositoryResponse:
         repository_context = await self.context_builder.build(
-            str(request.repository_url),
+            str(request.repository_url) if request.repository_url else None,
+            request.local_root_path,
             incremental=request.incremental,
             progress_callback=progress_callback,
         )

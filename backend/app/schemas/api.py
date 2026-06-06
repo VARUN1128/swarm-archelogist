@@ -1,4 +1,4 @@
-from pydantic import Field, HttpUrl
+from pydantic import Field, HttpUrl, model_validator
 
 from app.schemas.analysis import (
     ArchitectureReport,
@@ -7,7 +7,7 @@ from app.schemas.analysis import (
     SecurityReport,
     StaffEngineerReview,
 )
-from app.schemas.common import AgentProgress, Finding, RepositoryContext
+from app.schemas.common import AgentProgress, Finding, RepositoryContext, StrictBaseModel
 from app.schemas.patching import (
     ApplyPatchesReport,
     PatchExecutionValidationReport,
@@ -15,7 +15,6 @@ from app.schemas.patching import (
     PatchValidationReport,
     PullRequestDraft,
 )
-from app.schemas.common import StrictBaseModel
 
 
 class IncrementalAnalysisOptions(StrictBaseModel):
@@ -27,8 +26,15 @@ class IncrementalAnalysisOptions(StrictBaseModel):
 
 
 class AnalyzeRepositoryRequest(StrictBaseModel):
-    repository_url: HttpUrl
+    repository_url: HttpUrl | None = None
+    local_root_path: str | None = None
     incremental: IncrementalAnalysisOptions | None = None
+
+    @model_validator(mode="after")
+    def validate_repository_source(self) -> "AnalyzeRepositoryRequest":
+        if not self.repository_url and not self.local_root_path:
+            raise ValueError("Provide either a repository URL or a local repository path.")
+        return self
 
 
 class AnalyzeRepositoryResponse(StrictBaseModel):

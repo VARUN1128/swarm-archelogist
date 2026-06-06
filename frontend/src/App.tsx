@@ -206,6 +206,8 @@ export default function App() {
     setAnalysis(nextAnalysis);
     setFixes(nextFixes);
     setPrDraft(nextPr);
+    setRepositoryUrl(nextAnalysis.repository_context.source_type === "github" ? nextAnalysis.repository_context.repository_url : "");
+    setLocalRootPath(nextAnalysis.repository_context.local_root_path ?? "");
     setSelectedFindingIds(
       nextSelectedFindingIds.length
         ? nextSelectedFindingIds
@@ -317,7 +319,11 @@ export default function App() {
     setShareId(null);
     navigate(workspaceSectionPath("overview"));
     try {
-      const job = await createAnalysisJob(repositoryUrl, buildIncrementalOptions());
+      const job = await createAnalysisJob(
+        repositoryUrl.trim() || undefined,
+        localRootPath.trim() || undefined,
+        buildIncrementalOptions(),
+      );
       setAnalysisJobId(job.job_id);
       setAnalysisProgress(job.progress);
       stopPolling();

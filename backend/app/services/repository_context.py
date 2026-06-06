@@ -13,13 +13,15 @@ from app.schemas.common import (
     ShortlistCandidate,
 )
 from app.services.github_service import GitHubService
+from app.services.local_repository_service import LocalRepositoryService
 
 ProgressCallback = Callable[[AgentProgress], Awaitable[None] | None]
 
 
 class RepositoryContextBuilder:
-    def __init__(self, github_service: GitHubService) -> None:
+    def __init__(self, github_service: GitHubService, local_repository_service: LocalRepositoryService) -> None:
         self.github_service = github_service
+        self.local_repository_service = local_repository_service
         self.manifest_names = {
             "package.json",
             "pnpm-lock.yaml",
@@ -39,21 +41,43 @@ class RepositoryContextBuilder:
 
     async def build(
         self,
-        repository_url: str,
+        repository_url: str | None,
+        local_root_path: str | None = None,
         incremental: IncrementalAnalysisOptions | None = None,
         progress_callback: ProgressCallback | None = None,
     ) -> RepositoryContext:
         self._cache_hits = 0
         self._cache_misses = 0
-        await self._emit(progress_callback, "context_builder", "running", "Validating GitHub repository URL.")
-        owner, repo = self.github_service.parse_repository_url(repository_url)
-        await self._emit(progress_callback, "context_builder", "running", f"Fetching repository metadata for {owner}/{repo}.")
-        metadata = await self.github_service.get_repository_metadata(owner, repo)
-        await self._emit(progress_callback, "context_builder", "running", "Reading repository README for high-level context.")
-        readme = await self.github_service.get_readme(owner, repo)
-        await self._emit(progress_callback, "context_builder", "running", f"Loading repository tree from branch {metadata.default_branch}.")
-        tree = await self.github_service.get_tree(owner, repo, metadata.default_branch)
-        incremental_paths = await self._resolve_incremental_paths(owner, repo, incremental, progress_callback)
+
+        source_type = "github" if repository_url else "local"
+        owner: str | None = None
+        repo: str | None = None
+        source_root: Path | None = None
+
+        if source_type == "github":
+            if repository_url is None:
+                raise ValueError("repository_url is required for GitHub analysis.")
+            await self._emit(progress_callback, "context_builder", "running", "Validating GitHub repository URL.")
+            owner, repo = self.github_service.parse_repository_url(repository_url)
+            await self._emit(progress_callback, "context_builder", "running", f"Fetching repository metadata for {owner}/{repo}.")
+            metadata = await self.github_service.get_repository_metadata(owner, repo)
+            await self._emit(progress_callback, "context_builder", "running", "Reading repository README for high-level context.")
+            readme = await self.github_service.get_readme(owner, repo)
+            await self._emit(progress_callback, "context_builder", "running", f"Loading repository tree from branch {metadata.default_branch}.")
+            tree = await self.github_service.get_tree(owner, repo, metadata.default_branch)
+            incremental_paths = await self._resolve_github_incremental_paths(owner, repo, incremental, progress_callback)
+        else:
+            await self._emit(progress_callback, "context_builder", "running", "Validating local repository path.")
+            if local_root_path is None:
+                raise ValueError("local_root_path is required for local analysis.")
+            source_root = self.local_repository_service.parse_local_root(local_root_path)
+            metadata = self.local_repository_service.get_repository_metadata(source_root)
+            await self._emit(progress_callback, "context_builder", "running", "Reading local repository README for high-level context.")
+            readme = self.local_repository_service.get_readme(source_root)
+            await self._emit(progress_callback, "context_builder", "running", f"Loading repository tree from local path {source_root}.")
+            tree = self.local_repository_service.get_tree(source_root)
+            incremental_paths = self.local_repository_service.resolve_incremental_paths(source_root, incremental)
+
         await self._emit(progress_callback, "context_builder", "running", "Pass 1: ranking repository files for specialist analysis.")
         shortlists = self._build_specialist_shortlists(tree, incremental_paths)
         await self._emit(
@@ -62,8 +86,21 @@ class RepositoryContextBuilder:
             "running",
             f"Pass 2: summarizing {self._count_unique_shortlisted_paths(shortlists)} shortlisted files for deep analysis.",
         )
-        manifests = await self._collect_manifest_summaries(owner, repo, tree, progress_callback)
-        representative_files = await self._collect_representative_files(owner, repo, tree, shortlists, progress_callback)
+        manifests = await self._collect_manifest_summaries(
+            tree,
+            progress_callback,
+            owner=owner,
+            repo=repo,
+            local_root=source_root,
+        )
+        representative_files = await self._collect_representative_files(
+            tree,
+            shortlists,
+            progress_callback,
+            owner=owner,
+            repo=repo,
+            local_root=source_root,
+        )
         agent_contexts = self._build_agent_contexts(shortlists, representative_files)
         condensed_summary = self._condense_context(metadata.description or "", readme, manifests, representative_files, shortlists)
         await self._emit(
@@ -73,7 +110,9 @@ class RepositoryContextBuilder:
             f"Condensed context built from {len(manifests)} manifests, {len(representative_files)} shortlisted summaries, {self._cache_hits} cache hits, and {self._cache_misses} new summaries.",
         )
         return RepositoryContext(
-            repository_url=repository_url,
+            repository_url=repository_url or f"local://{metadata.name}",
+            source_type=source_type,
+            local_root_path=str(source_root) if source_root else None,
             metadata=metadata,
             readme=readme[:6000],
             manifests=manifests,
@@ -88,7 +127,7 @@ class RepositoryContextBuilder:
             ),
         )
 
-    async def _resolve_incremental_paths(
+    async def _resolve_github_incremental_paths(
         self,
         owner: str,
         repo: str,
@@ -110,27 +149,31 @@ class RepositoryContextBuilder:
 
     async def _collect_manifest_summaries(
         self,
-        owner: str,
-        repo: str,
         tree: list[RepoFile],
         progress_callback: ProgressCallback | None = None,
+        *,
+        owner: str | None,
+        repo: str | None,
+        local_root: Path | None,
     ) -> list[FileSummary]:
         manifests: list[FileSummary] = []
         for item in tree:
             if Path(item.path).name in self.manifest_names and item.type == "blob":
                 await self._emit(progress_callback, "context_builder", "running", f"Summarizing manifest {item.path}.")
-                manifests.append(await self._get_or_create_summary(owner, repo, item))
+                manifests.append(await self._get_or_create_summary(item, owner=owner, repo=repo, local_root=local_root))
             if len(manifests) >= 10:
                 break
         return manifests
 
     async def _collect_representative_files(
         self,
-        owner: str,
-        repo: str,
         tree: list[RepoFile],
         shortlists: dict[str, list[ShortlistCandidate]],
         progress_callback: ProgressCallback | None = None,
+        *,
+        owner: str | None,
+        repo: str | None,
+        local_root: Path | None,
     ) -> list[FileSummary]:
         summaries: list[FileSummary] = []
         seen_paths: set[str] = set()
@@ -142,17 +185,31 @@ class RepositoryContextBuilder:
                 seen_paths.add(candidate.path)
                 repo_file = tree_map.get(candidate.path, RepoFile(path=candidate.path, type="blob"))
                 await self._emit(progress_callback, "context_builder", "running", f"Inspecting shortlisted file {candidate.path}.")
-                summaries.append(await self._get_or_create_summary(owner, repo, repo_file))
+                summaries.append(await self._get_or_create_summary(repo_file, owner=owner, repo=repo, local_root=local_root))
         return summaries
 
-    async def _get_or_create_summary(self, owner: str, repo: str, item: RepoFile) -> FileSummary:
-        cache_key = f"{owner}/{repo}:{item.path}:{item.sha or 'unknown'}"
+    async def _get_or_create_summary(
+        self,
+        item: RepoFile,
+        *,
+        owner: str | None,
+        repo: str | None,
+        local_root: Path | None,
+    ) -> FileSummary:
+        cache_prefix = f"{owner}/{repo}" if owner and repo else str(local_root)
+        cache_key = f"{cache_prefix}:{item.path}:{item.sha or 'unknown'}"
         cached = self._summary_cache.get(cache_key)
         if cached is not None:
             self._cache_hits += 1
             return cached
 
-        content = await self.github_service.get_file_content(owner, repo, item.path)
+        if owner and repo:
+            content = await self.github_service.get_file_content(owner, repo, item.path)
+        elif local_root is not None:
+            content = self.local_repository_service.get_file_content(local_root, item.path)
+        else:
+            content = ""
+
         summary = FileSummary(
             path=item.path,
             content_summary=self._summarize_file_content(content),
@@ -218,7 +275,10 @@ class RepositoryContextBuilder:
             if item.type == "blob" and Path(item.path).suffix.lower() in self.priority_suffixes
         ]
         if incremental_paths:
-            focused_files = [item for item in source_files if item.path in incremental_paths or any(item.path.startswith(f"{path.rsplit('/', 1)[0]}/") for path in incremental_paths if "/" in path)]
+            focused_files = [
+                item for item in source_files
+                if item.path in incremental_paths or any(item.path.startswith(f"{path.rsplit('/', 1)[0]}/") for path in incremental_paths if "/" in path)
+            ]
             source_files = focused_files or source_files
         return {
             "architecture": self._select_candidates(source_files, self._architecture_score, limit=8),

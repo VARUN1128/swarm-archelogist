@@ -34,17 +34,28 @@ async function request<T>(path: string, options: RequestInit): Promise<T> {
   return (await response.json()) as T;
 }
 
-export function analyzeRepository(repositoryUrl: string) {
+export function analyzeRepository(repositoryUrl?: string, localRootPath?: string) {
   return request<AnalyzeRepositoryResponse>("/analyze", {
     method: "POST",
-    body: JSON.stringify({ repository_url: repositoryUrl }),
+    body: JSON.stringify({
+      repository_url: repositoryUrl || null,
+      local_root_path: localRootPath || null,
+    }),
   });
 }
 
-export function createAnalysisJob(repositoryUrl: string, incremental?: IncrementalAnalysisOptions) {
+export function createAnalysisJob(
+  repositoryUrl?: string,
+  localRootPath?: string,
+  incremental?: IncrementalAnalysisOptions,
+) {
   return request<AnalysisJobStartResponse>("/analyze-jobs", {
     method: "POST",
-    body: JSON.stringify({ repository_url: repositoryUrl, incremental }),
+    body: JSON.stringify({
+      repository_url: repositoryUrl || null,
+      local_root_path: localRootPath || null,
+      incremental,
+    }),
   });
 }
 

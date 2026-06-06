@@ -1,7 +1,6 @@
 import { ArrowRight, BrainCircuit, GitBranch, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface HeroProps {
@@ -43,7 +42,7 @@ export function Hero({
     <section className="home-hero-shell overflow-hidden border border-border bg-background transition-colors duration-500 ease-in-out">
       <div className="relative min-h-[620px] overflow-hidden md:min-h-[720px]">
         <img
-          src="/images/editorial-landscape.png"
+          src="/images/hero-scenic.png"
           alt=""
           aria-hidden="true"
           data-parallax
@@ -58,94 +57,44 @@ export function Hero({
           {themeToggle}
         </div>
 
-        <div className="relative z-10 mx-auto flex min-h-[620px] max-w-5xl flex-col items-center justify-end px-5 pb-16 text-center md:min-h-[720px] md:pb-20">
-          <Badge
-            data-reveal="rise"
-            className="home-hero-badge w-fit border-[#4b2f28]/20 bg-[#5a372f]/85 text-[#fff4e8] backdrop-blur-md dark:border-[#f5d0a9]/25 dark:bg-[#f0b77f]/20 dark:text-[#fff4e8]"
-          >
-            Multi-Agent Engineering Review Board
-          </Badge>
-          <div className="mt-8 space-y-8">
-            <h1 data-reveal="rise" data-reveal-delay="120" className="text-5xl leading-none text-[#111111] dark:text-[#f5f5f5] md:text-7xl">
-              Inspect architecture, detect risks, and ship PR-ready fixes with a Staff Engineer validation pass.
+        <div className="relative z-10 mx-auto flex min-h-[620px] w-full max-w-6xl flex-col items-start justify-end px-5 pb-12 text-left md:min-h-[720px] md:px-8 md:pb-16">
+          <div className="mt-8 w-full max-w-4xl space-y-6">
+            <h1 data-reveal="rise" data-reveal-delay="120" className="max-w-4xl text-5xl leading-none text-[#111111] dark:text-[#f5f5f5] md:text-7xl">
+              Turn repository risk into pull request-ready fixes.
             </h1>
-            <p data-reveal="rise" data-reveal-delay="220" className="mx-auto max-w-3xl font-mono text-sm leading-8 text-[#4b5563] dark:text-[#d4d4d4] md:text-base">
-              Swarm Archaeologist fans out architecture, security, QA, and performance specialists in parallel, then routes everything through a Staff Engineer validation pass before proposing patches and PR-ready output.
+            <p data-reveal="rise" data-reveal-delay="220" className="max-w-3xl font-mono text-sm leading-8 text-[#4b5563] dark:text-[#d4d4d4] md:text-base">
+              Architecture, security, QA, and performance review, consolidated through a Staff Engineer validation pass.
             </p>
           </div>
-        </div>
-      </div>
-
-      <div data-reveal="rise" data-reveal-delay="280" className="border-t border-border bg-background">
-        <div className="mx-auto max-w-6xl px-5 py-6 md:px-8 md:py-8">
-          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
-            <input
-              value={repositoryUrl}
-              onChange={(event) => onRepositoryUrlChange(event.target.value)}
-              placeholder="https://github.com/openai/openai-python"
-              className="home-hover-input min-h-14 rounded-sm border border-border bg-background px-4 text-sm text-foreground outline-none transition-colors duration-500 ease-in-out focus:border-foreground"
-            />
-            <input
-              value={localRootPath}
-              onChange={(event) => onLocalRootPathChange(event.target.value)}
-              placeholder="D:\\Projects\\your-local-repo"
-              className="home-hover-input min-h-14 rounded-sm border border-border bg-background px-4 text-sm text-foreground outline-none transition-colors duration-500 ease-in-out focus:border-foreground"
-            />
-            <Button className="home-hover-button min-h-14 px-6" onClick={onAnalyze} disabled={isAnalyzing || !repositoryUrl.trim()}>
-              {isAnalyzing ? "Analyzing..." : "Analyze Repository"}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="mt-3 grid gap-3 lg:grid-cols-[220px_1fr_1fr]">
-            <select
-              value={incrementalMode}
-              onChange={(event) => onIncrementalModeChange(event.target.value as "full" | "diff" | "pull_request")}
-              className="home-hover-input min-h-12 rounded-sm border border-border bg-background px-4 text-sm text-foreground outline-none transition-colors duration-500 ease-in-out focus:border-foreground"
-            >
-              <option value="full">Full Analysis</option>
-              <option value="diff">Diff Analysis</option>
-              <option value="pull_request">PR Analysis</option>
-            </select>
-
-            {incrementalMode === "diff" && (
-              <>
-                <input
-                  value={baseRef}
-                  onChange={(event) => onBaseRefChange(event.target.value)}
-                  placeholder="base ref (main)"
-                  className="home-hover-input min-h-12 rounded-sm border border-border bg-background px-4 text-sm text-foreground outline-none transition-colors duration-500 ease-in-out focus:border-foreground"
-                />
-                <input
-                  value={headRef}
-                  onChange={(event) => onHeadRefChange(event.target.value)}
-                  placeholder="head ref (feature-branch)"
-                  className="home-hover-input min-h-12 rounded-sm border border-border bg-background px-4 text-sm text-foreground outline-none transition-colors duration-500 ease-in-out focus:border-foreground"
-                />
-              </>
-            )}
-
-            {incrementalMode === "pull_request" && (
+          <div
+            data-reveal="rise"
+            data-reveal-delay="280"
+            className="mt-10 w-full bg-[#fff8ef]/70 p-2 shadow-[0_30px_80px_rgba(0,0,0,0.18)] backdrop-blur-xl dark:bg-[#111111]/72 md:mt-12 md:p-3"
+          >
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
               <input
-                value={pullRequestNumber}
-                onChange={(event) => onPullRequestNumberChange(event.target.value)}
-                placeholder="pull request number"
-                className="home-hover-input min-h-12 rounded-sm border border-border bg-background px-4 text-sm text-foreground outline-none transition-colors duration-500 ease-in-out focus:border-foreground lg:col-span-2"
+                value={repositoryUrl}
+                onChange={(event) => onRepositoryUrlChange(event.target.value)}
+                placeholder="Paste repo link"
+                className="home-hover-input min-h-14 rounded-sm border border-[#111111]/12 bg-white px-4 text-sm text-[#111111] caret-[#111111] outline-none transition-colors duration-500 ease-in-out placeholder:text-[#6b7280] focus:border-foreground dark:border-white/10 dark:bg-[#0b0b0b]/90 dark:text-[#f5f5f5] dark:caret-[#f5f5f5] dark:placeholder:text-[#a3a3a3]"
               />
-            )}
+              <input
+                value={localRootPath}
+                onChange={(event) => onLocalRootPathChange(event.target.value)}
+                placeholder="Paste local path"
+                className="home-hover-input min-h-14 rounded-sm border border-[#111111]/12 bg-white px-4 text-sm text-[#111111] caret-[#111111] outline-none transition-colors duration-500 ease-in-out placeholder:text-[#6b7280] focus:border-foreground dark:border-white/10 dark:bg-[#0b0b0b]/90 dark:text-[#f5f5f5] dark:caret-[#f5f5f5] dark:placeholder:text-[#a3a3a3]"
+              />
+              <Button
+                className="home-hover-button min-h-14 px-6"
+                onClick={onAnalyze}
+                disabled={isAnalyzing || (!repositoryUrl.trim() && !localRootPath.trim())}
+              >
+                {isAnalyzing ? "Analyzing..." : "Analyze Repository"}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
 
-            {incrementalMode === "full" && (
-              <div className="flex min-h-12 items-center border border-border bg-background px-4 lg:col-span-2">
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">
-                  Full repository baseline review
-                </p>
-              </div>
-            )}
           </div>
-
-          <p className="mt-6 border-t border-border pt-4 font-mono text-xs leading-7 text-muted">
-            Add the local repository path now if you want approved patches to be applied later without re-entering it. Use diff or PR mode to analyze only changed code and cut token usage.
-          </p>
         </div>
       </div>
 

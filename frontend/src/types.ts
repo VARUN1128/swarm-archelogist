@@ -71,6 +71,8 @@ export interface RepositoryMetadata {
 
 export interface RepositoryContext {
   repository_url: string;
+  source_type: string;
+  local_root_path?: string | null;
   metadata: RepositoryMetadata;
   readme: string;
   manifests: FileSummary[];

@@ -134,6 +134,8 @@ class ContextOptimization(StrictBaseModel):
 
 class RepositoryContext(StrictBaseModel):
     repository_url: str
+    source_type: str = "github"
+    local_root_path: str | None = None
     metadata: RepositoryMetadata
     readme: str
     manifests: list[FileSummary]

@@ -2,6 +2,7 @@ from app.services.analysis_service import AnalysisService
 from app.services.analysis_jobs import AnalysisJobManager
 from app.services.apply_service import ApplyService
 from app.services.github_service import GitHubService
+from app.services.local_repository_service import LocalRepositoryService
 from app.services.openai_service import OpenAIService
 from app.services.orchestrator import ReviewOrchestrator
 from app.services.patch_service import PatchService
@@ -18,8 +19,12 @@ validation_service = ValidationService(apply_service=apply_service)
 
 def get_analysis_service() -> AnalysisService:
     github_service = GitHubService()
+    local_repository_service = LocalRepositoryService()
     openai_service = OpenAIService()
-    context_builder = RepositoryContextBuilder(github_service=github_service)
+    context_builder = RepositoryContextBuilder(
+        github_service=github_service,
+        local_repository_service=local_repository_service,
+    )
     orchestrator = ReviewOrchestrator(openai_service=openai_service)
     patch_service = PatchService(openai_service=openai_service, github_service=github_service)
     pr_service = PRService(openai_service=openai_service)

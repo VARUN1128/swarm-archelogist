@@ -1,20 +1,20 @@
-import { ArrowUpRight, CheckCircle2, GitBranch, Radar, ScanSearch, Sparkles, Workflow } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Linkedin, Mail, Radar, ScanSearch, Sparkles, Workflow } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
 const valuePoints = [
   {
-    label: "Signals surfaced",
-    value: "Architecture, security, QA, and performance are separated into evidence-backed tracks instead of one blended summary.",
+    label: "Specialist coverage",
+    value: "Architecture, security, QA, and performance are separated into focused evidence tracks.",
   },
   {
-    label: "Token discipline",
-    value: "Incremental diff and PR modes keep reviews focused on changed code, reducing repeat analysis waste on large repositories.",
+    label: "Focused analysis",
+    value: "Diff and PR review modes keep attention on changed code instead of re-reading the whole repository.",
   },
   {
-    label: "Actionability",
-    value: "Approved findings route directly into patch proposals, validation runs, and a PR-ready package that teams can inspect.",
+    label: "Review to output",
+    value: "Approved findings flow into patch proposals, validation, and a PR-ready package.",
   },
 ];
 
@@ -78,10 +78,10 @@ export function HomeSections() {
         <div className="bg-background px-8 py-14 md:px-12 md:py-20">
           <Badge>Why Teams Use It</Badge>
           <h2 className="mt-6 max-w-4xl text-4xl leading-none tracking-tight text-foreground md:text-6xl">
-            A review workspace that feels closer to an engineering editorial desk than a generic AI dashboard.
+            A calmer review workspace for architecture, risk, and code change decisions.
           </h2>
           <p className="mt-8 max-w-3xl font-mono text-sm leading-8 text-muted md:text-base">
-            The home experience now introduces the product the way a premium tool should: clear operating model, strong typography, quiet structure, and enough depth to explain why this workflow earns trust.
+            Senior-level review structure without the usual wall of output.
           </p>
         </div>
         <div className="grid gap-px bg-border">
@@ -104,11 +104,11 @@ export function HomeSections() {
           <div>
             <Badge>How It Works</Badge>
             <h2 className="mt-6 max-w-4xl text-4xl leading-none tracking-tight text-foreground md:text-6xl">
-              Structured review, staged evidence, and a workflow that stays legible as complexity grows.
+              Structured review that stays readable as complexity grows.
             </h2>
           </div>
           <p className="max-w-2xl font-mono text-sm leading-8 text-muted">
-            The product is strongest when every step is visible. Instead of hiding behind one button, it shows the review system, the handoff points, and what actually becomes actionable.
+            Each step is visible, from repository mapping to final patch output.
           </p>
         </div>
         <div className="grid gap-px border border-border bg-border lg:grid-cols-2 xl:grid-cols-4">
@@ -134,10 +134,10 @@ export function HomeSections() {
         <div data-reveal="rise" className="home-hover-panel border border-border px-8 py-12 md:px-10 md:py-16">
           <Badge>Operating Modes</Badge>
           <h2 className="mt-6 text-4xl leading-none tracking-tight text-foreground md:text-5xl">
-            Choose breadth when you need context. Choose precision when you need speed.
+            Use full scans when you need context. Use targeted review when you need speed.
           </h2>
           <p className="mt-8 font-mono text-sm leading-8 text-muted">
-            The intake controls on the top of the page are not decoration. They shape the analysis path, the token profile, and the amount of review effort spent on each run.
+            The analysis path changes how much context is read and how much effort is spent on each run.
           </p>
           <div className="mt-10 space-y-6 border-t border-border pt-8">
             {[
@@ -167,46 +167,6 @@ export function HomeSections() {
               <p className="mt-5 text-sm leading-8 text-muted">{item.body}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      <section className="grid gap-px border border-border bg-border lg:grid-cols-[1.1fr_0.9fr]">
-        <div data-reveal="rise" className="home-hover-panel bg-background px-8 py-14 md:px-12 md:py-20">
-          <Badge>Built For Real Review Loops</Badge>
-          <h2 className="mt-6 max-w-4xl text-4xl leading-none tracking-tight text-foreground md:text-6xl">
-            Evidence first. Approvals second. Code changes only after both make sense.
-          </h2>
-          <p className="mt-8 max-w-3xl font-mono text-sm leading-8 text-muted md:text-base">
-            That sequence is what separates a useful engineering assistant from a noisy demo. The home page should make that philosophy obvious before a user even starts the first run.
-          </p>
-        </div>
-        <div className="bg-card px-8 py-14 md:px-10 md:py-20">
-          <div className="grid gap-8">
-            {[
-              {
-                icon: GitBranch,
-                title: "Inspect changed code without re-reading the whole repo every time.",
-              },
-              {
-                icon: ScanSearch,
-                title: "Keep findings reviewable by routing them through a Staff Engineer gate.",
-              },
-              {
-                icon: CheckCircle2,
-                title: "Apply approved patches locally only when validation and reviewer intent line up.",
-              },
-            ].map((item, index) => (
-              <div
-                key={item.title}
-                data-reveal="rise"
-                data-reveal-delay={String(120 + index * 100)}
-                className="home-hover-row flex gap-4 border-b border-border pb-8 last:border-b-0 last:pb-0"
-              >
-                <item.icon className="mt-1 h-4 w-4 shrink-0 text-foreground" />
-                <p className="text-base leading-8 text-foreground">{item.title}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -240,7 +200,24 @@ export function HomeSections() {
           </div>
           <div className="mt-10 flex flex-col gap-4 border-t border-[#111111]/15 pt-6 text-sm text-[#4b5563] dark:border-white/15 dark:text-[#d4d4d4] md:flex-row md:items-center md:justify-between">
             <p>Repository intelligence workspace for architecture, risk review, and patch packaging.</p>
-            <p className="font-mono text-xs uppercase tracking-[0.28em]">Light by default. Dark on demand.</p>
+            <div className="flex items-center gap-3">
+              <a
+                href="https://www.linkedin.com/in/varun-haridas"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="LinkedIn profile"
+                className="home-hover-link inline-flex h-10 w-10 items-center justify-center border border-[#111111]/15 text-[#111111] transition-transform duration-700 hover:scale-[1.02] dark:border-white/15 dark:text-[#f5f5f5]"
+              >
+                <Linkedin className="h-4 w-4" />
+              </a>
+              <a
+                href="mailto:varunharidas.in@gmail.com"
+                aria-label="Send email"
+                className="home-hover-link inline-flex h-10 w-10 items-center justify-center border border-[#111111]/15 text-[#111111] transition-transform duration-700 hover:scale-[1.02] dark:border-white/15 dark:text-[#f5f5f5]"
+              >
+                <Mail className="h-4 w-4" />
+              </a>
+            </div>
           </div>
         </div>
       </footer>
