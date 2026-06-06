@@ -1,11 +1,15 @@
 import type {
   ApplyApprovedPatchesResponse,
+  IncrementalAnalysisOptions,
   AnalysisJobStartResponse,
   AnalysisJobStatusResponse,
   AnalyzeRepositoryResponse,
   GenerateFixesResponse,
   GeneratePRResponse,
   PatchProposal,
+  SessionListResponse,
+  SessionResponse,
+  ValidateApprovedPatchesResponse,
   PatchValidationReport,
   RepositoryContext,
   StaffEngineerReview,
@@ -37,10 +41,10 @@ export function analyzeRepository(repositoryUrl: string) {
   });
 }
 
-export function createAnalysisJob(repositoryUrl: string) {
+export function createAnalysisJob(repositoryUrl: string, incremental?: IncrementalAnalysisOptions) {
   return request<AnalysisJobStartResponse>("/analyze-jobs", {
     method: "POST",
-    body: JSON.stringify({ repository_url: repositoryUrl }),
+    body: JSON.stringify({ repository_url: repositoryUrl, incremental }),
   });
 }
 
@@ -50,10 +54,15 @@ export function getAnalysisJob(jobId: string) {
   });
 }
 
-export function generateFixes(repositoryContext: RepositoryContext, review: StaffEngineerReview) {
+export function generateFixes(
+  repositoryContext: RepositoryContext,
+  review: StaffEngineerReview,
+  sessionId?: string,
+  selectedFindingIds: string[] = [],
+) {
   return request<GenerateFixesResponse>("/generate-fixes", {
     method: "POST",
-    body: JSON.stringify({ repository_context: repositoryContext, review }),
+    body: JSON.stringify({ session_id: sessionId, repository_context: repositoryContext, review, selected_finding_ids: selectedFindingIds }),
   });
 }
 
@@ -62,10 +71,12 @@ export function generatePR(
   review: StaffEngineerReview,
   patches: PatchProposal[],
   validationReport: PatchValidationReport,
+  sessionId?: string,
 ) {
   return request<GeneratePRResponse>("/generate-pr", {
     method: "POST",
     body: JSON.stringify({
+      session_id: sessionId,
       repository_context: repositoryContext,
       review,
       patches,
@@ -89,4 +100,33 @@ export function applyApprovedPatches(
       force_overwrite: forceOverwrite,
     }),
   });
+}
+
+export function validateApprovedPatches(
+  localRootPath: string,
+  patches: PatchProposal[],
+  lintCommand?: string,
+  testCommand?: string,
+) {
+  return request<ValidateApprovedPatchesResponse>("/validate-approved-patches", {
+    method: "POST",
+    body: JSON.stringify({
+      local_root_path: localRootPath,
+      patches,
+      lint_command: lintCommand ?? null,
+      test_command: testCommand ?? null,
+    }),
+  });
+}
+
+export function listSessions() {
+  return request<SessionListResponse>("/sessions", { method: "GET" });
+}
+
+export function getSession(sessionId: string) {
+  return request<SessionResponse>(`/sessions/${sessionId}`, { method: "GET" });
+}
+
+export function getSharedSession(shareId: string) {
+  return request<SessionResponse>(`/shared/${shareId}`, { method: "GET" });
 }

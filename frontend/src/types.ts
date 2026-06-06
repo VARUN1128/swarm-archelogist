@@ -45,6 +45,8 @@ export interface FileSummary {
   path: string;
   content_summary: string;
   language: string;
+  sha?: string | null;
+  size?: number | null;
 }
 
 export interface RepoFile {
@@ -75,6 +77,12 @@ export interface RepositoryContext {
   representative_files: FileSummary[];
   structure: RepoFile[];
   condensed_summary: string;
+  agent_contexts: Record<string, unknown>;
+  optimization: {
+    cached_summary_hits: number;
+    generated_summary_count: number;
+    shortlisted_file_count: number;
+  };
 }
 
 export interface AgentProgress {
@@ -106,6 +114,8 @@ export interface StaffEngineerReview {
 }
 
 export interface AnalyzeRepositoryResponse {
+  session_id: string;
+  share_id: string;
   repository_context: RepositoryContext;
   progress: AgentProgress[];
   architecture_report: ArchitectureReport;
@@ -135,6 +145,22 @@ export interface PatchValidationIssue {
 export interface PatchValidationReport {
   valid: boolean;
   issues: PatchValidationIssue[];
+}
+
+export interface ExecutionCommandResult {
+  command: string;
+  success: boolean;
+  exit_code: number;
+  stdout: string;
+  stderr: string;
+}
+
+export interface PatchExecutionValidationReport {
+  temp_root_path: string;
+  apply_report: ApplyPatchesReport;
+  lint_result?: ExecutionCommandResult | null;
+  test_result?: ExecutionCommandResult | null;
+  valid: boolean;
 }
 
 export interface GenerateFixesResponse {
@@ -187,4 +213,44 @@ export interface ApplyPatchesReport {
 
 export interface ApplyApprovedPatchesResponse {
   report: ApplyPatchesReport;
+}
+
+export interface IncrementalAnalysisOptions {
+  mode: "full" | "diff" | "pull_request" | "changed_files";
+  base_ref?: string | null;
+  head_ref?: string | null;
+  pull_request_number?: number | null;
+  changed_files: string[];
+}
+
+export interface ValidateApprovedPatchesResponse {
+  report: PatchExecutionValidationReport;
+}
+
+export interface SessionSummary {
+  session_id: string;
+  share_id: string;
+  repository_url: string;
+  repository_name: string;
+  created_at: string;
+  updated_at: string;
+  approved_findings_count: number;
+  patch_count: number;
+  has_pr_draft: boolean;
+}
+
+export interface SessionRecord {
+  summary: SessionSummary;
+  analysis: AnalyzeRepositoryResponse;
+  selected_finding_ids: string[];
+  fixes?: GenerateFixesResponse | null;
+  pr?: GeneratePRResponse | null;
+}
+
+export interface SessionListResponse {
+  sessions: SessionSummary[];
+}
+
+export interface SessionResponse {
+  session: SessionRecord;
 }

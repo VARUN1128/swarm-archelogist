@@ -19,36 +19,36 @@ export function WorkspaceOverview({ analysis }: WorkspaceOverviewProps) {
   };
 
   return (
-    <div className="space-y-5">
-      <div className="grid gap-4 md:grid-cols-4">
+    <div className="space-y-8">
+      <div className="grid grid-cols-2 gap-px bg-border md:grid-cols-4">
         {[
           ["Critical", severityCounts.critical],
           ["High", severityCounts.high],
           ["Medium", severityCounts.medium],
           ["Low", severityCounts.low],
         ].map(([label, value]) => (
-          <Card key={label} className="border-border bg-card p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">{label}</p>
-            <p className="mt-3 text-3xl font-semibold text-white">{value}</p>
+          <Card key={label} className="rounded-none border-0 bg-background p-4 md:p-6">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.3em] text-muted">{label}</p>
+            <p className="mt-4 text-3xl leading-none tracking-tight text-foreground md:text-5xl">{value}</p>
           </Card>
         ))}
       </div>
-      <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="border-border bg-card p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Repository Summary</p>
-          <p className="mt-3 text-sm leading-7 text-slate-200">{analysis.repository_context.condensed_summary}</p>
-          <div className="mt-5 grid gap-3 md:grid-cols-2">
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Detected Stack</p>
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <Card className="border-border bg-background p-5 md:p-8">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.3em] text-muted">Repository Summary</p>
+          <p className="mt-5 font-mono text-sm leading-8 text-muted">{analysis.repository_context.condensed_summary}</p>
+          <div className="mt-8 grid gap-0 border border-border md:grid-cols-2">
+            <div className="border-b border-border p-5 md:border-b-0 md:border-r">
+              <p className="font-mono text-[11px] font-medium uppercase tracking-[0.3em] text-muted">Detected Stack</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {analysis.architecture_report.detected_stack.map((item) => (
-                  <span key={item} className="rounded-full border border-white/10 bg-[#050816] px-3 py-1 text-xs text-slate-200">{item}</span>
+                  <span key={item} className="border border-border px-3 py-1 font-mono text-xs text-foreground">{item}</span>
                 ))}
               </div>
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Architecture Snapshot</p>
-              <div className="mt-3 space-y-2 text-sm text-slate-200">
+            <div className="p-5">
+              <p className="font-mono text-[11px] font-medium uppercase tracking-[0.3em] text-muted">Architecture Snapshot</p>
+              <div className="mt-4 space-y-3 font-mono text-sm text-foreground">
                 {analysis.architecture_report.key_components.slice(0, 5).map((item) => (
                   <p key={item}>{item}</p>
                 ))}
@@ -56,19 +56,19 @@ export function WorkspaceOverview({ analysis }: WorkspaceOverviewProps) {
             </div>
           </div>
         </Card>
-        <Card className="border-border bg-card p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Risk Summary</p>
+        <Card className="border-border bg-background p-5 md:p-8">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.3em] text-muted">Risk Summary</p>
           <div className="mt-3 space-y-3">
             {analysis.staff_engineer_review.priority_ranking.slice(0, 5).map((item, index) => (
-              <div key={item} className="rounded-xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Priority {index + 1}</p>
-                <p className="mt-2 text-sm font-medium text-white">{item}</p>
+              <div key={item} className="border-t border-border py-4 first:border-t-0 first:pt-0">
+                <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted">Priority {index + 1}</p>
+                <p className="mt-3 text-lg leading-tight text-foreground">{item}</p>
               </div>
             ))}
           </div>
-          <div className="mt-5 rounded-xl border border-white/10 bg-white/5 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Findings Summary</p>
-            <p className="mt-3 text-sm leading-7 text-slate-200">{analysis.staff_engineer_review.engineering_reasoning}</p>
+          <div className="mt-8 border-t border-border pt-5">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.3em] text-muted">Findings Summary</p>
+            <p className="mt-4 font-mono text-sm leading-8 text-muted">{analysis.staff_engineer_review.engineering_reasoning}</p>
           </div>
         </Card>
       </div>

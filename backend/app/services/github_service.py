@@ -76,3 +76,13 @@ class GitHubService:
         if not encoded:
             return ""
         return base64.b64decode(encoded).decode("utf-8", errors="ignore")
+
+    async def compare_refs(self, owner: str, repo: str, base_ref: str, head_ref: str) -> list[str]:
+        payload = await self._get(f"/repos/{owner}/{repo}/compare/{base_ref}...{head_ref}")
+        return [item["filename"] for item in payload.get("files", [])]
+
+    async def get_pull_request_files(self, owner: str, repo: str, pull_request_number: int) -> list[str]:
+        payload = await self._get(f"/repos/{owner}/{repo}/pulls/{pull_request_number}/files")
+        if not isinstance(payload, list):
+            return []
+        return [item["filename"] for item in payload]

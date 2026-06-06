@@ -49,3 +49,19 @@ class ApplyPatchesReport(StrictBaseModel):
     applied_count: int
     skipped_count: int
     results: list[AppliedPatchResult]
+
+
+class ExecutionCommandResult(StrictBaseModel):
+    command: str
+    success: bool
+    exit_code: int
+    stdout: str
+    stderr: str
+
+
+class PatchExecutionValidationReport(StrictBaseModel):
+    temp_root_path: str
+    apply_report: ApplyPatchesReport
+    lint_result: ExecutionCommandResult | None = None
+    test_result: ExecutionCommandResult | None = None
+    valid: bool

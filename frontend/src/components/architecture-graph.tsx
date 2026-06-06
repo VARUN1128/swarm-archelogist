@@ -13,9 +13,9 @@ export function ArchitectureGraph({ report }: ArchitectureGraphProps) {
     ...node,
     data: {
       label: (
-        <div className="rounded-xl border border-white/10 bg-slate-900/90 px-4 py-3 text-sm text-white shadow-lg">
+        <div className="border border-border bg-background px-3 py-2 text-sm text-foreground shadow-none">
           <div className="font-semibold">{String(node.data.label ?? node.id)}</div>
-          <div className="mt-1 text-xs text-slate-400">{String(node.data.kind ?? "component")}</div>
+          <div className="mt-1 text-xs text-muted">{String(node.data.kind ?? "component")}</div>
         </div>
       ),
     },
@@ -24,21 +24,21 @@ export function ArchitectureGraph({ report }: ArchitectureGraphProps) {
   const edges = report.graph_edges.map((edge) => ({
     ...edge,
     animated: true,
-    style: { stroke: "#77c5ff", strokeOpacity: 0.85 },
-    labelStyle: { fill: "#cbd5e1", fontSize: 12 },
+    style: { stroke: "#9ca3af", strokeOpacity: 0.9 },
+    labelStyle: { fill: "#6b7280", fontSize: 12 },
   }));
 
   return (
-    <Card className="p-5">
+    <Card className="border-border bg-card p-4 md:p-5">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-white">Architecture Graph</h3>
-        <p className="mt-1 text-sm text-slate-300">{report.summary}</p>
+        <h3 className="text-lg font-semibold text-foreground">Architecture Graph</h3>
+        <p className="mt-1 text-sm leading-7 text-muted">{report.summary}</p>
       </div>
-      <div className="h-[440px] overflow-hidden rounded-2xl border border-white/10 bg-[#040b14]">
+      <div className="h-[360px] overflow-hidden border border-border bg-background md:h-[440px]">
         <ReactFlow nodes={nodes} edges={edges} fitView>
-          <MiniMap pannable zoomable style={{ background: "#08111d" }} />
+          <MiniMap pannable zoomable style={{ background: "#f3f4f6" }} />
           <Controls />
-          <Background color="#11324d" gap={24} />
+          <Background color="#d1d5db" gap={24} />
         </ReactFlow>
       </div>
     </Card>

@@ -3,7 +3,13 @@ import asyncio
 from fastapi import APIRouter, Depends
 from fastapi import HTTPException, status
 
-from app.core.dependencies import get_analysis_job_manager, get_analysis_service, get_apply_service
+from app.core.dependencies import (
+    get_analysis_job_manager,
+    get_analysis_service,
+    get_apply_service,
+    get_session_store,
+    get_validation_service,
+)
 from app.schemas.api import (
     ApplyApprovedPatchesRequest,
     ApplyApprovedPatchesResponse,
@@ -15,10 +21,16 @@ from app.schemas.api import (
     GenerateFixesResponse,
     GeneratePRRequest,
     GeneratePRResponse,
+    SessionListResponse,
+    SessionResponse,
+    ValidateApprovedPatchesRequest,
+    ValidateApprovedPatchesResponse,
 )
 from app.services.analysis_jobs import AnalysisJobManager
 from app.services.analysis_service import AnalysisService
 from app.services.apply_service import ApplyService
+from app.services.session_store import SessionStore
+from app.services.validation_service import ValidationService
 
 router = APIRouter(tags=["review"])
 
@@ -81,6 +93,41 @@ async def apply_approved_patches(
         force_overwrite=request.force_overwrite,
     )
     return ApplyApprovedPatchesResponse(report=report)
+
+
+@router.post("/validate-approved-patches", response_model=ValidateApprovedPatchesResponse)
+async def validate_approved_patches(
+    request: ValidateApprovedPatchesRequest,
+    service: ValidationService = Depends(get_validation_service),
+) -> ValidateApprovedPatchesResponse:
+    report = service.validate_with_execution(
+        local_root_path=request.local_root_path,
+        patches=request.patches,
+        lint_command=request.lint_command,
+        test_command=request.test_command,
+    )
+    return ValidateApprovedPatchesResponse(report=report)
+
+
+@router.get("/sessions", response_model=SessionListResponse)
+async def list_sessions(service: SessionStore = Depends(get_session_store)) -> SessionListResponse:
+    return SessionListResponse(sessions=service.list_sessions())
+
+
+@router.get("/sessions/{session_id}", response_model=SessionResponse)
+async def get_session(session_id: str, service: SessionStore = Depends(get_session_store)) -> SessionResponse:
+    session = service.get_session(session_id)
+    if session is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found.")
+    return SessionResponse(session=session)
+
+
+@router.get("/shared/{share_id}", response_model=SessionResponse)
+async def get_shared_session(share_id: str, service: SessionStore = Depends(get_session_store)) -> SessionResponse:
+    session = service.get_session_by_share_id(share_id)
+    if session is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Shared session not found.")
+    return SessionResponse(session=session)
 
 
 async def _run_analysis_job(

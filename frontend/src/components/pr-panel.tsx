@@ -20,44 +20,44 @@ export function PRPanel({ prDraft }: PRPanelProps) {
   };
 
   return (
-    <Card className="border-border bg-card p-5">
+    <Card className="border-border bg-card p-4 md:p-5">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <FileText className="h-5 w-5 text-accent" />
+          <FileText className="h-5 w-5 text-foreground" />
           <div>
-            <h3 className="text-lg font-semibold text-white">{prDraft.title}</h3>
-            <p className="text-sm text-slate-300">{prDraft.summary}</p>
+            <h3 className="text-lg font-semibold text-foreground">{prDraft.title}</h3>
+            <p className="text-sm leading-7 text-muted">{prDraft.summary}</p>
           </div>
         </div>
-        <div className="flex gap-3">
-          <Button variant="secondary" onClick={() => navigator.clipboard.writeText(prDraft.markdown)}>
+        <div className="grid w-full gap-3 sm:w-auto sm:grid-cols-2">
+          <Button variant="secondary" onClick={() => navigator.clipboard.writeText(prDraft.markdown)} className="w-full">
             Copy
           </Button>
-          <Button onClick={download}>
+          <Button onClick={download} className="w-full">
             <Download className="mr-2 h-4 w-4" />
             Download
           </Button>
         </div>
       </div>
       <div className="grid gap-3 md:grid-cols-3">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Modified Files</p>
-          <div className="mt-3 space-y-2 text-sm text-white">
+        <div className="border border-border bg-background p-4">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-muted">Modified Files</p>
+          <div className="mt-3 space-y-2 text-sm text-foreground">
             {prDraft.modified_files.map((file) => (
-              <p key={file}>{file}</p>
+              <p key={file} className="break-all">{file}</p>
             ))}
           </div>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Impact</p>
-          <p className="mt-3 text-sm text-slate-200">{prDraft.impact}</p>
+        <div className="border border-border bg-background p-4">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-muted">Impact</p>
+          <p className="mt-3 text-sm leading-7 text-foreground">{prDraft.impact}</p>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Risk</p>
-          <p className="mt-3 text-sm text-slate-200">{prDraft.risk_assessment}</p>
+        <div className="border border-border bg-background p-4">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-muted">Risk</p>
+          <p className="mt-3 text-sm leading-7 text-foreground">{prDraft.risk_assessment}</p>
         </div>
       </div>
-      <pre className="mt-5 overflow-x-auto rounded-2xl border border-white/10 bg-[#02060d] p-4 text-xs leading-6 text-slate-200">
+      <pre className="mt-5 overflow-x-auto border border-border bg-background p-4 text-xs leading-6 text-foreground">
         {prDraft.markdown}
       </pre>
     </Card>

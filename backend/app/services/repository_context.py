@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Awaitable, Callable
 
+from app.schemas.api import IncrementalAnalysisOptions
 from app.schemas.common import (
     AgentContext,
     AgentContextMap,
@@ -36,7 +37,12 @@ class RepositoryContextBuilder:
         self._cache_hits = 0
         self._cache_misses = 0
 
-    async def build(self, repository_url: str, progress_callback: ProgressCallback | None = None) -> RepositoryContext:
+    async def build(
+        self,
+        repository_url: str,
+        incremental: IncrementalAnalysisOptions | None = None,
+        progress_callback: ProgressCallback | None = None,
+    ) -> RepositoryContext:
         self._cache_hits = 0
         self._cache_misses = 0
         await self._emit(progress_callback, "context_builder", "running", "Validating GitHub repository URL.")
@@ -47,8 +53,9 @@ class RepositoryContextBuilder:
         readme = await self.github_service.get_readme(owner, repo)
         await self._emit(progress_callback, "context_builder", "running", f"Loading repository tree from branch {metadata.default_branch}.")
         tree = await self.github_service.get_tree(owner, repo, metadata.default_branch)
+        incremental_paths = await self._resolve_incremental_paths(owner, repo, incremental, progress_callback)
         await self._emit(progress_callback, "context_builder", "running", "Pass 1: ranking repository files for specialist analysis.")
-        shortlists = self._build_specialist_shortlists(tree)
+        shortlists = self._build_specialist_shortlists(tree, incremental_paths)
         await self._emit(
             progress_callback,
             "context_builder",
@@ -80,6 +87,26 @@ class RepositoryContextBuilder:
                 shortlisted_file_count=self._count_unique_shortlisted_paths(shortlists),
             ),
         )
+
+    async def _resolve_incremental_paths(
+        self,
+        owner: str,
+        repo: str,
+        incremental: IncrementalAnalysisOptions | None,
+        progress_callback: ProgressCallback | None,
+    ) -> set[str] | None:
+        if incremental is None or incremental.mode == "full":
+            return None
+        if incremental.mode == "diff" and incremental.base_ref and incremental.head_ref:
+            await self._emit(progress_callback, "context_builder", "running", f"Loading compare diff {incremental.base_ref}...{incremental.head_ref}.")
+            return set(await self.github_service.compare_refs(owner, repo, incremental.base_ref, incremental.head_ref))
+        if incremental.mode == "pull_request" and incremental.pull_request_number is not None:
+            await self._emit(progress_callback, "context_builder", "running", f"Loading changed files for pull request #{incremental.pull_request_number}.")
+            return set(await self.github_service.get_pull_request_files(owner, repo, incremental.pull_request_number))
+        if incremental.mode == "changed_files" and incremental.changed_files:
+            await self._emit(progress_callback, "context_builder", "running", "Using caller-provided changed file list for incremental analysis.")
+            return set(incremental.changed_files)
+        return None
 
     async def _collect_manifest_summaries(
         self,
@@ -185,11 +212,14 @@ class RepositoryContextBuilder:
             f"README excerpt:\n{readme_excerpt}"
         )[:5000]
 
-    def _build_specialist_shortlists(self, tree: list[RepoFile]) -> dict[str, list[ShortlistCandidate]]:
+    def _build_specialist_shortlists(self, tree: list[RepoFile], incremental_paths: set[str] | None = None) -> dict[str, list[ShortlistCandidate]]:
         source_files = [
             item for item in tree
             if item.type == "blob" and Path(item.path).suffix.lower() in self.priority_suffixes
         ]
+        if incremental_paths:
+            focused_files = [item for item in source_files if item.path in incremental_paths or any(item.path.startswith(f"{path.rsplit('/', 1)[0]}/") for path in incremental_paths if "/" in path)]
+            source_files = focused_files or source_files
         return {
             "architecture": self._select_candidates(source_files, self._architecture_score, limit=8),
             "security": self._select_candidates(source_files, self._security_score, limit=8),

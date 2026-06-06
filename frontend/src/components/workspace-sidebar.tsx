@@ -31,19 +31,17 @@ interface WorkspaceSidebarProps {
 
 export function WorkspaceSidebar({ activeSection, onSectionChange }: WorkspaceSidebarProps) {
   return (
-    <aside className="rounded-2xl border border-border bg-card p-3">
-      <p className="px-3 pb-3 text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Repository</p>
-      <nav className="space-y-1">
+    <aside className="border border-border bg-background p-4 transition-colors duration-500 ease-in-out">
+      <p className="px-2 pb-4 font-mono text-[11px] font-medium uppercase tracking-[0.3em] text-muted">Repository</p>
+      <nav className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:block lg:space-y-0 lg:overflow-visible lg:px-0 lg:pb-0">
         {items.map((item) => (
           <button
             key={item.key}
             type="button"
             onClick={() => onSectionChange(item.key)}
             className={cn(
-              "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm transition",
-              activeSection === item.key
-                ? "border border-accent/30 bg-accent/10 text-white"
-                : "border border-transparent text-slate-300 hover:border-white/10 hover:bg-white/5 hover:text-white",
+              "flex shrink-0 items-center gap-3 border border-border px-3 py-3 text-left text-sm transition-transform transition-colors duration-700 ease-in-out hover:scale-[1.02] lg:w-full lg:border-x-0 lg:border-b-0 lg:border-t lg:px-2 lg:py-4",
+              activeSection === item.key ? "bg-card text-foreground" : "text-muted hover:bg-card hover:text-foreground",
             )}
           >
             <item.icon className="h-4 w-4" />

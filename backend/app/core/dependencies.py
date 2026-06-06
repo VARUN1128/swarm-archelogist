@@ -7,9 +7,13 @@ from app.services.orchestrator import ReviewOrchestrator
 from app.services.patch_service import PatchService
 from app.services.pr_service import PRService
 from app.services.repository_context import RepositoryContextBuilder
+from app.services.session_store import SessionStore
+from app.services.validation_service import ValidationService
 
 analysis_job_manager = AnalysisJobManager()
 apply_service = ApplyService()
+session_store = SessionStore()
+validation_service = ValidationService(apply_service=apply_service)
 
 
 def get_analysis_service() -> AnalysisService:
@@ -24,6 +28,7 @@ def get_analysis_service() -> AnalysisService:
         orchestrator=orchestrator,
         patch_service=patch_service,
         pr_service=pr_service,
+        session_store=session_store,
     )
 
 
@@ -33,3 +38,11 @@ def get_analysis_job_manager() -> AnalysisJobManager:
 
 def get_apply_service() -> ApplyService:
     return apply_service
+
+
+def get_session_store() -> SessionStore:
+    return session_store
+
+
+def get_validation_service() -> ValidationService:
+    return validation_service
