@@ -78,6 +78,8 @@ OpenAI is also part of the runtime product itself through:
 - Hosted app: `https://swarm-archelogist.vercel.app/`
 
 ## Screenshots<img width="1901" height="861" alt="image" src="https://github.com/user-attachments/assets/8d78351d-fbee-4a76-b89b-7426f5eeb227" />
+<img width="1896" height="961" alt="image" src="https://github.com/user-attachments/assets/c3f326c3-d024-4b56-8eb7-f74bcbd42202" />
+<img width="1903" height="965" alt="image" src="https://github.com/user-attachments/assets/aa3833f6-c088-43f7-bed6-5c292b4694ec" />
 
 Add screenshots here for:
 - home / intake experience
