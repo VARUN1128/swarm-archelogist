@@ -131,6 +131,11 @@ export default function App() {
   const sessionRouteMatch = matchPath("/sessions/:sessionId/:section", location.pathname);
   const sharedRouteMatch = matchPath("/shared/:shareId/:section", location.pathname);
   const activeSection = useMemo<WorkspaceSection>(() => pathToWorkspaceSection(location.pathname) ?? "overview", [location.pathname]);
+  const isHostedEnvironment = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    const host = window.location.hostname;
+    return host !== "localhost" && host !== "127.0.0.1";
+  }, []);
 
   useEffect(() => {
     void refreshSessions();
@@ -305,6 +310,14 @@ export default function App() {
   };
 
   const handleAnalyze = async () => {
+    const trimmedRepositoryUrl = repositoryUrl.trim();
+    const trimmedLocalRootPath = localRootPath.trim();
+
+    if (isHostedEnvironment && !trimmedRepositoryUrl && trimmedLocalRootPath) {
+      setError("Local path analysis only works in local development. Use a GitHub repository URL in the hosted app.");
+      return;
+    }
+
     setIsAnalyzing(true);
     setError(null);
     setFixes(null);
@@ -320,8 +333,8 @@ export default function App() {
     navigate(workspaceSectionPath("overview"));
     try {
       const job = await createAnalysisJob(
-        repositoryUrl.trim() || undefined,
-        localRootPath.trim() || undefined,
+        trimmedRepositoryUrl || undefined,
+        trimmedLocalRootPath || undefined,
         buildIncrementalOptions(),
       );
       setAnalysisJobId(job.job_id);
