@@ -75,7 +75,7 @@ OpenAI is also part of the runtime product itself through:
 - Demo / pitch video: `Add your video link here`
 
 ## Live Link
-- Hosted app: `[Add your live link here if deployed](https://swarm-archelogist.vercel.app/)`
+- Hosted app: `https://swarm-archelogist.vercel.app/`
 
 ## Screenshots<img width="1901" height="861" alt="image" src="https://github.com/user-attachments/assets/8d78351d-fbee-4a76-b89b-7426f5eeb227" />
 
