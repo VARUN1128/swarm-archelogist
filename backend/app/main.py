@@ -31,6 +31,16 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     register_exception_handlers(app)
+
+    @app.get("/", tags=["meta"])
+    async def root() -> dict[str, str]:
+        return {
+            "name": settings.app_name,
+            "status": "ok",
+            "health": f"{settings.api_prefix}/health",
+            "docs": f"{settings.api_prefix}/docs",
+        }
+
     app.include_router(health.router, prefix=settings.api_prefix)
     app.include_router(review.router, prefix=settings.api_prefix)
     return app
