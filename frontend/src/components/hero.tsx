@@ -71,12 +71,12 @@ export function Hero({
             data-reveal-delay="280"
             className="mt-10 w-full bg-[#fff8ef]/70 p-2 shadow-[0_30px_80px_rgba(0,0,0,0.18)] backdrop-blur-xl dark:bg-[#111111]/72 md:mt-12 md:p-3"
           >
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:items-start">
               <input
                 value={repositoryUrl}
                 onChange={(event) => onRepositoryUrlChange(event.target.value)}
                 placeholder="Paste repo link"
-                className="home-hover-input min-h-14 rounded-sm border border-[#111111]/12 bg-white px-4 text-sm text-[#111111] caret-[#111111] outline-none transition-colors duration-500 ease-in-out placeholder:text-[#6b7280] focus:border-foreground dark:border-white/10 dark:bg-[#0b0b0b]/90 dark:text-[#f5f5f5] dark:caret-[#f5f5f5] dark:placeholder:text-[#a3a3a3]"
+                className="home-hover-input min-h-14 w-full rounded-sm border border-[#111111]/12 bg-white px-4 text-sm text-[#111111] caret-[#111111] outline-none transition-colors duration-500 ease-in-out placeholder:text-[#6b7280] focus:border-foreground dark:border-white/10 dark:bg-[#0b0b0b]/90 dark:text-[#f5f5f5] dark:caret-[#f5f5f5] dark:placeholder:text-[#a3a3a3]"
               />
               <input
                 value={localRootPath}

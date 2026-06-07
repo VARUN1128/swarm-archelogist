@@ -577,7 +577,7 @@ export default function App() {
           <div className="grid gap-5 xl:grid-cols-[220px_minmax(0,1fr)_280px]">
             <WorkspaceSidebar activeSection={activeSection} onSectionChange={openWorkspaceSection} />
             <div className="space-y-4">
-              <Card className="border-border bg-card flex items-center gap-3 p-4 text-slate-200">
+              <Card className="border-border bg-card flex items-center gap-3 p-4 text-foreground">
                 <LoaderCircle className="h-5 w-5 animate-spin text-accent" />
                 {isLoadingSession
                   ? "Loading persistent session workspace..."
